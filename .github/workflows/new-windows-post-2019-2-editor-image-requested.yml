@@ -152,10 +152,10 @@ jobs:
       #   Pull previous images   #
       ############################
       - name: Pull windows base image (must exist)
-        run: docker pull $Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }}
+        run: docker pull unityci/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }}
 
       - name: Pull windows hub image (must exist)
-        run: docker pull $Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }}
+        run: docker pull unityci/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }}
 
       ############################
       #   Windows Editor image   #

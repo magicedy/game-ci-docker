@@ -100,18 +100,18 @@ jobs:
           echo "repoVersion (only minor and major): ${{ steps.buildParameters.outputs.repoVersionMinor }}"
           echo "repoVersion (only major): ${{ steps.buildParameters.outputs.repoVersionMajor }}"
 
-      - name: Report new build
-        uses: ./.github/workflows/actions/report-to-backend
-        with:
-          token: ${{ secrets.VERSIONING_TOKEN }}
-          jobId: ${{ steps.buildParameters.outputs.jobId }}
-          status: started
-          # Build info
-          imageType: editor
-          baseOs: windows
-          repoVersion: ${{ steps.buildParameters.outputs.repoVersionFull }}
-          editorVersion: ${{ steps.buildParameters.outputs.editorVersion }}
-          targetPlatform: ${{ matrix.targetPlatform }}
+      # - name: Report new build
+      #   uses: ./.github/workflows/actions/report-to-backend
+      #   with:
+      #     token: ${{ secrets.VERSIONING_TOKEN }}
+      #     jobId: ${{ steps.buildParameters.outputs.jobId }}
+      #     status: started
+      #     # Build info
+      #     imageType: editor
+      #     baseOs: windows
+      #     repoVersion: ${{ steps.buildParameters.outputs.repoVersionFull }}
+      #     editorVersion: ${{ steps.buildParameters.outputs.editorVersion }}
+      #     targetPlatform: ${{ matrix.targetPlatform }}
 
       #############
       #   Setup   #
@@ -223,43 +223,43 @@ jobs:
           echo "metadata=$MetaData" >> $Env:GITHUB_OUTPUT
 
       #################
-      #   reporting   #
-      #################
-      - name: Report publication
-        if: ${{ success() }}
-        uses: ./.github/workflows/actions/report-to-backend
-        with:
-          token: ${{ secrets.VERSIONING_TOKEN }}
-          jobId: ${{ steps.buildParameters.outputs.jobId }}
-          status: published
-          # Build info
-          imageType: editor
-          baseOs: windows
-          repoVersion: ${{ steps.buildParameters.outputs.repoVersionFull }}
-          editorVersion: ${{ steps.buildParameters.outputs.editorVersion }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-          # Publication info
-          imageRepo: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          imageName: editor
-          friendlyTag: windows-${{ steps.buildParameters.outputs.repoVersionMinor }}
-          specificTag: windows-${{ steps.buildParameters.outputs.repoVersionFull }}
-          digest: ${{ steps.image-digest.outputs.digest }}
+      # #   reporting   #
+      # #################
+      # - name: Report publication
+      #   if: ${{ success() }}
+      #   uses: ./.github/workflows/actions/report-to-backend
+      #   with:
+      #     token: ${{ secrets.VERSIONING_TOKEN }}
+      #     jobId: ${{ steps.buildParameters.outputs.jobId }}
+      #     status: published
+      #     # Build info
+      #     imageType: editor
+      #     baseOs: windows
+      #     repoVersion: ${{ steps.buildParameters.outputs.repoVersionFull }}
+      #     editorVersion: ${{ steps.buildParameters.outputs.editorVersion }}
+      #     targetPlatform: ${{ matrix.targetPlatform }}
+      #     # Publication info
+      #     imageRepo: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      #     imageName: editor
+      #     friendlyTag: windows-${{ steps.buildParameters.outputs.repoVersionMinor }}
+      #     specificTag: windows-${{ steps.buildParameters.outputs.repoVersionFull }}
+      #     digest: ${{ steps.image-digest.outputs.digest }}
 
-      - name: Report failure
-        if: ${{ failure() || cancelled() }}
-        uses: ./.github/workflows/actions/report-to-backend
-        with:
-          token: ${{ secrets.VERSIONING_TOKEN }}
-          jobId: ${{ steps.buildParameters.outputs.jobId }}
-          status: failed
-          # Build info
-          imageType: editor
-          baseOs: windows
-          repoVersion: ${{ steps.buildParameters.outputs.repoVersionFull }}
-          editorVersion: ${{ steps.buildParameters.outputs.editorVersion }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-          # Failure info
-          reason: ${{ job.status }} - ${{ steps.image-digest.outputs.metadata }}
+      # - name: Report failure
+      #   if: ${{ failure() || cancelled() }}
+      #   uses: ./.github/workflows/actions/report-to-backend
+      #   with:
+      #     token: ${{ secrets.VERSIONING_TOKEN }}
+      #     jobId: ${{ steps.buildParameters.outputs.jobId }}
+      #     status: failed
+      #     # Build info
+      #     imageType: editor
+      #     baseOs: windows
+      #     repoVersion: ${{ steps.buildParameters.outputs.repoVersionFull }}
+      #     editorVersion: ${{ steps.buildParameters.outputs.editorVersion }}
+      #     targetPlatform: ${{ matrix.targetPlatform }}
+      #     # Failure info
+      #     reason: ${{ job.status }} - ${{ steps.image-digest.outputs.metadata }}
 
       ###############
       #   Metrics   #

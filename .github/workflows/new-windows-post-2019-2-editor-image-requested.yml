@@ -163,39 +163,27 @@ jobs:
         run: |
           echo "=== Checking if images exist ==="
           
-          # Check official images
+          # Check official images (these are needed for the first build attempt)
           Write-Host "Checking official unityci/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }}"
-          try {
-            docker manifest inspect unityci/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }} | Out-Null
+          if (docker manifest inspect unityci/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }} 2>$null) {
             Write-Host "✓ Official hub image EXISTS" -ForegroundColor Green
-          } catch {
+          } else {
             Write-Host "✗ Official hub image NOT FOUND" -ForegroundColor Red
           }
           
           Write-Host "Checking official unityci/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }}"
-          try {
-            docker manifest inspect unityci/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} | Out-Null
+          if (docker manifest inspect unityci/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} 2>$null) {
             Write-Host "✓ Official base image EXISTS" -ForegroundColor Green
-          } catch {
+          } else {
             Write-Host "✗ Official base image NOT FOUND" -ForegroundColor Red
           }
           
-          # Check your registry images
-          Write-Host "Checking your registry $Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }}"
-          try {
-            docker manifest inspect $Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }} | Out-Null
-            Write-Host "✓ Your hub image EXISTS" -ForegroundColor Green
-          } catch {
-            Write-Host "✗ Your hub image NOT FOUND (This is likely the cause of manifest unknown)" -ForegroundColor Red
-          }
-          
-          Write-Host "Checking your registry $Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }}"
-          try {
-            docker manifest inspect $Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} | Out-Null
-            Write-Host "✓ Your base image EXISTS" -ForegroundColor Green
-          } catch {
-            Write-Host "✗ Your base image NOT FOUND" -ForegroundColor Red
-          }
+          # Note: Your registry images are only needed if official images fail
+          # This is because the workflow uses a fallback strategy:
+          # 1. First try: Use official images (unityci/hub, unityci/base)
+          # 2. If fails: Retry with your registry images
+          Write-Host ""
+          Write-Host "Note: Your registry images are only checked if official images fail" -ForegroundColor Yellow
 
       - name: Pull windows base image (must exist)
         run: |
@@ -250,6 +238,31 @@ jobs:
       #######################
       #   Retry the above   #
       #######################
+      - name: Check your registry images (only if first build failed)
+        if: steps.build_windows_editor_image.outcome=='failure'
+        run: |
+          echo "=== First build failed, checking your registry images ==="
+          
+          Write-Host "Checking your registry $Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }}"
+          if (docker manifest inspect $Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }} 2>$null) {
+            Write-Host "✓ Your hub image EXISTS" -ForegroundColor Green
+          } else {
+            Write-Host "✗ Your hub image NOT FOUND - You need to build hub image first" -ForegroundColor Red
+          }
+          
+          Write-Host "Checking your registry $Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }}"
+          if (docker manifest inspect $Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} 2>$null) {
+            Write-Host "✓ Your base image EXISTS" -ForegroundColor Green
+          } else {
+            Write-Host "✗ Your base image NOT FOUND - You need to build base image first" -ForegroundColor Red
+          }
+          
+          Write-Host ""
+          Write-Host "If your images are missing, you need to build them first:" -ForegroundColor Yellow
+          Write-Host "1. Build base: docker build ./images/windows/base/ --tag $Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }}" -ForegroundColor Yellow
+          Write-Host "2. Build hub: docker build ./images/windows/hub/ --build-arg baseImage=$Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} --tag $Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }}" -ForegroundColor Yellow
+          Write-Host "3. Push both images to registry" -ForegroundColor Yellow
+
       - name: Build and Publish Windows Editor Image (retry)
         if: steps.build_windows_editor_image.outcome=='failure'
         id: build_windows_editor_image_retry

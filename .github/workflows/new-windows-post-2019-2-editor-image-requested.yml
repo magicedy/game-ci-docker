@@ -165,8 +165,8 @@ jobs:
         continue-on-error: true
         run: |
           docker build ./images/windows/editor/ `
-            --build-arg hubImage=$Env:REGISTRY/$Env:IMAGE_NAME/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }} `
-            --build-arg baseImage=$Env:REGISTRY/$Env:IMAGE_NAME/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} `
+            --build-arg hubImage=unityci/hub:windows-${{ steps.buildParameters.outputs.repoVersionFull }} `
+            --build-arg baseImage=unityci/base:windows-${{ steps.buildParameters.outputs.repoVersionFull }} `
             --build-arg version=${{ steps.buildParameters.outputs.editorVersion }} `
             --build-arg changeSet=${{ steps.buildParameters.outputs.changeSet }} `
             --build-arg module=${{ matrix.targetPlatform }} `
